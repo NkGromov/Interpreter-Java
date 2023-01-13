@@ -34,11 +34,8 @@ public class Lexer {
       Pattern regExp = Pattern.compile("^" + token.getType().getRegex());
       String subText = this.code.substring(this.position);
       Matcher matcher = regExp.matcher(subText);
-      matcher.find();
-      int start = matcher.start();
-      int end = matcher.end();
-      String result = subText.substring(matcher.start(), matcher.end());
-      if (result.length() > 0) {
+      if (matcher.find()) {
+        String result = subText.substring(matcher.start(), matcher.end());
         tokenList.add(new Token(this.position, result, token.getType()));
         this.position += result.length();
         return this.nextToken();

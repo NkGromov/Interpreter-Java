@@ -4,7 +4,7 @@ import Lexer.Lexer;
 import Token.*;
 
 public class App {
-    private static final String code = "сумма = 1 + 2;";
+    private static final String code = "сумма = 1 + (2 + 4);";
     public static void main(String[] args) throws Exception {
         Lexer lexer = new Lexer(code);
         lexer.analys();
