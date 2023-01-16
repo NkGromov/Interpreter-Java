@@ -1,3 +1,7 @@
 package AST;
 
-public class ExpressionNode {}
+import java.util.Map;
+
+public class ExpressionNode {
+  public Integer applyNode(Map<String, Integer> scope) {return 0;}
+}

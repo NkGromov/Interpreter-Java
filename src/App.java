@@ -1,18 +1,20 @@
 import java.text.*;
 
+import AST.ExpressionNode;
+import AST.StatementsNode;
 import Lexer.Lexer;
+import Parser.Parser;
 import Token.*;
 
 public class App {
-    private static final String code = "сумма = 1 + (2 + 4);";
+    private static final String code = "сумма = 1 + (2 + 4); КОНСОЛЬ сумма;";
     public static void main(String[] args) throws Exception {
         Lexer lexer = new Lexer(code);
         lexer.analys();
         
-        for(Token token : lexer.getTokenList()){
-            System.out.println(MessageFormat.format("name {0} text {1}",  token.getToken().getName(),token.getText()));
-        }
-        
-       
+        Parser parser = new Parser(lexer.getTokenList());
+        StatementsNode root =  parser.parseCode();
+        parser.run(root);
+ 
     }
 }

@@ -1,41 +1,46 @@
 package Parser;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import AST.*;
-import Token.Token;
-import Token.TokenTypeList;
+import Token.*;
 
 public class Parser {
-  private Integer position;
+  private Integer position = 0;
   private List<Token> tokenList = new ArrayList<>();
-  private Map<String, Integer> scope;
+  private Map<String, Integer> scope = new HashMap<>();
 
   public Parser(List<Token> tokenList) {
     this.tokenList = tokenList;
   }
 
-  public void parseCode() {
-    try {
-      StatementsNode root = new StatementsNode();
-      while (this.position < this.tokenList.size()) {
-        ExpressionNode codeStringNode = this.parseExpression();
+  public void run(StatementsNode rooteNode) {
+    for (ExpressionNode node : rooteNode.getCodeStrings()) node.applyNode(this.scope);
+  }
+
+  public StatementsNode parseCode() {
+    StatementsNode root = new StatementsNode();
+    while (this.position < this.tokenList.size()) {
+      ExpressionNode codeStringNode = this.parseExpression();
+      try {
         this.require(TokenTypeList.SEMICOLON);
-        root.addNode(codeStringNode);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
       }
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
+      root.addNode(codeStringNode);
     }
 
+    return root;
   }
 
   private ExpressionNode parseExpression() {
     if (this.match(TokenTypeList.LOG) != null)
       return this.parsePrint();
-    this.position -= 1;
     ExpressionNode variable = this.parseVariableOrNumber();
     Token assign = this.match(TokenTypeList.ASSIGN);
     if (assign != null) {
@@ -47,7 +52,7 @@ public class Parser {
   }
 
   private ExpressionNode parsePrint() {
-    return new UnarOperationNode(this.match(TokenTypeList.ASSIGN), this.parseFormula());
+    return new UnarOperationNode(this.match(TokenTypeList.LOG), this.parseFormula());
   }
 
   private ExpressionNode parseVariableOrNumber() {
@@ -56,7 +61,7 @@ public class Parser {
       return new NumberNode(numberNode);
     Token variableNode = this.match(TokenTypeList.VARIABLE);
     if (variableNode != null)
-      return new NumberNode(variableNode);
+      return new VariableNode(variableNode);
     throw new Error("Ожидается число или переменная на позиции " + this.position);
   }
 
@@ -73,7 +78,7 @@ public class Parser {
 
   private ExpressionNode parseParentheses() {
     if (this.match(TokenTypeList.LPAR) == null)
-    return this.parseVariableOrNumber();
+      return this.parseVariableOrNumber();
     ExpressionNode node = this.parseFormula();
     try {
       this.require(TokenTypeList.RPAR);
