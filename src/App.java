@@ -1,10 +1,6 @@
-import java.text.*;
-
-import AST.ExpressionNode;
 import AST.StatementsNode;
 import Lexer.Lexer;
 import Parser.Parser;
-import Token.*;
 
 public class App {
     private static final String code = "сумма = 1 + (2 + 4); КОНСОЛЬ сумма;";
