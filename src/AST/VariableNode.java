@@ -11,7 +11,8 @@ public class VariableNode extends ExpressionNode {
     super();
     this.variable = variable;
   }
-
+  
+  @Override
   public Integer applyNode(Map<String, Integer> scope){
     return scope.get(this.variable.getText());
   }

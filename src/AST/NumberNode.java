@@ -9,7 +9,8 @@ public class NumberNode extends ExpressionNode {
   public NumberNode(Token number){
     this.number = number;
   }
-
+  
+  @Override
   public Integer applyNode(Map<String, Integer> scope){
     return Integer.parseInt(this.number.getText());
   }

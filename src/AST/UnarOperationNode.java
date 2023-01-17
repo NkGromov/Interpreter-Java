@@ -12,7 +12,8 @@ public class UnarOperationNode extends ExpressionNode {
     this.operator = operator;
     this.operand = operand;
   }
-
+  
+  @Override
   public Integer applyNode(Map<String, Integer> scope){
     System.out.println(this.operand.applyNode(scope));
     return this.operand.applyNode(scope);
