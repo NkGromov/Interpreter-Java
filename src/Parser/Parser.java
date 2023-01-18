@@ -19,12 +19,13 @@ public class Parser {
   }
 
   public void run(StatementsNode rooteNode) {
-    for (ExpressionNode node : rooteNode.getCodeStrings()) node.applyNode(this.scope);
+    for (ExpressionNode node : rooteNode.getCodeStrings())
+      node.applyNode(this.scope);
   }
 
   public StatementsNode parseCode() {
     StatementsNode root = new StatementsNode();
-    while (this.position < this.tokenList.size()) {
+    while (isPositionLessTokenList()) {
       ExpressionNode codeStringNode = this.parseExpression();
       try {
         this.require(TokenTypeList.SEMICOLON);
@@ -94,7 +95,7 @@ public class Parser {
   }
 
   private Token match(TokenTypeList... types) {
-    if (this.position < tokenList.size()) {
+    if (isPositionLessTokenList()) {
       Token currentToken = tokenList.get(this.position);
       Boolean isHasTokenType = Stream.of(types)
           .anyMatch(type -> type.getType().getName() == currentToken.getToken().getName());
@@ -104,5 +105,9 @@ public class Parser {
       }
     }
     return null;
+  }
+
+  private boolean isPositionLessTokenList() {
+    return this.position < this.tokenList.size();
   }
 }

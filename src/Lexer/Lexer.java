@@ -21,14 +21,11 @@ public class Lexer {
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
-
-    this.tokenList = this.tokenList.stream()
-        .filter(token -> token.getToken().getName() != TokenTypeList.SPACE.getType().getName())
-        .collect(Collectors.toList());
+    this.filterSpaces();
   }
 
   private boolean nextToken() throws Exception {
-    if (this.position >= this.code.length())
+    if (isPositionMoreTokenList())
       return true;
     for (TokenTypeList token : TokenTypeList.values()) {
       Pattern regExp = Pattern.compile("^" + token.getType().getRegex());
@@ -43,6 +40,16 @@ public class Lexer {
 
     }
     throw new Exception("На позиции " + this.position + " обнаружена ошибка");
+  }
+
+  private boolean isPositionMoreTokenList() {
+    return this.position >= this.code.length();
+  }
+
+  private void filterSpaces() {
+    this.tokenList = this.tokenList.stream()
+        .filter(token -> token.getToken().getName() != TokenTypeList.SPACE.getType().getName())
+        .collect(Collectors.toList());
   }
 
   public List<Token> getTokenList() {
