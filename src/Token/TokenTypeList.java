@@ -9,6 +9,8 @@ public enum TokenTypeList {
   LOG(new TokenType("LOG", "КОНСОЛЬ")),
   PLUS(new TokenType("PLUS", "\\+")),
   MINUS(new TokenType("MINUS", "\\-")),
+  MULTIPLICATION(new TokenType("MULTIPLICATION", "\\*")),
+  DIVISION(new TokenType("DIVISION", "\\/")),
   LPAR(new TokenType("LPAR", "\\(")),
   RPAR(new TokenType("RPAR", "\\)"));
 

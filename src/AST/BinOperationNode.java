@@ -22,6 +22,10 @@ public class BinOperationNode extends ExpressionNode {
       return this.leftNode.applyNode(scope) + this.rightNode.applyNode(scope);
     if (this.operator.getToken().getName() == TokenTypeList.MINUS.getType().getName())
       return this.leftNode.applyNode(scope) - this.rightNode.applyNode(scope);
+    if (this.operator.getToken().getName() == TokenTypeList.MULTIPLICATION.getType().getName())
+      return this.leftNode.applyNode(scope) * this.rightNode.applyNode(scope);
+    if (this.operator.getToken().getName() == TokenTypeList.DIVISION.getType().getName())
+      return this.leftNode.applyNode(scope) / this.rightNode.applyNode(scope);
     if (this.operator.getToken().getName() == TokenTypeList.ASSIGN.getType().getName()) {
       Integer result = this.rightNode.applyNode(scope);
       VariableNode variableNode = (VariableNode) this.leftNode;

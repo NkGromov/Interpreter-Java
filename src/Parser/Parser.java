@@ -67,11 +67,11 @@ public class Parser {
 
   private ExpressionNode parseFormula() {
     ExpressionNode leftNode = this.parseParentheses();
-    Token operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS);
+    Token operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION, TokenTypeList.DIVISION);
     while (operator != null) {
       ExpressionNode rithNode = this.parseParentheses();
       leftNode = new BinOperationNode(operator, leftNode, rithNode);
-      operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS);
+      operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION, TokenTypeList.DIVISION);
     }
     return leftNode;
   }
