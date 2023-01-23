@@ -1,5 +1,7 @@
 package Token;
 
+import java.util.ArrayList;
+
 public enum TokenTypeList {
   NUMBER(new TokenType("NUMBER", "[0-9]+")),
   VARIABLE(new TokenType("VARIABLE", "[а-я]+")),
@@ -19,15 +21,12 @@ public enum TokenTypeList {
   LT(new TokenType("LT", "\\<")),
   GT(new TokenType("GT", "\\>")),
   COMMA(new TokenType("COMMA", "\\,"));
-  
 
   private TokenType type;
   
   TokenTypeList(TokenType type) {
     this.type = type;
   }
-
- 
 
   public TokenType getType() {
     return this.type;

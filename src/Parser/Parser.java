@@ -25,7 +25,7 @@ public class Parser {
         node.applyNode(this.scope, fnDefinitions);
       } else if (node instanceof BinOperationNode) {
         BinOperationNode binNode = (BinOperationNode) node;
-        if (binNode.getRightNode() instanceof FunctionNode) {
+        if (binNode.getRightNode() instanceof FunctionNode || binNode.getRightNode() instanceof FnCallNode) {
           binNode.applyNode(scope, fnDefinitions);
         }
       } else {
@@ -103,8 +103,17 @@ public class Parser {
   }
 
   private ExpressionNode parseRightExpression(String variableName) {
-    if (match(TokenTypeList.LPAR) != null) {
+    if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.RPAR, this.position + 1)) {
+      this.position += 1;
       return parseFunctionExpression(variableName);
+    }
+    if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.VARIABLE, this.position + 1) && match(TokenTypeSets.OPERATIONS.getSets()) == null) {
+      this.position += 1;
+      return parseFunctionExpression(variableName);
+    }
+    if (positionMatch(TokenTypeList.VARIABLE, this.position) && positionMatch(TokenTypeList.LPAR, this.position + 1)) {
+      Token variableNode = this.match(TokenTypeList.VARIABLE);
+      return parseFunctionCall(variableNode.getText());
     }
     return parseFormula();
   }

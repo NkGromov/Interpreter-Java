@@ -16,14 +16,17 @@ public class FnCallNode extends ExpressionNode {
   }
 
   @Override
-  public void applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
+  public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
+    Integer result = 0;
     List<ExpressionNode> body = fnDefinitions.get(name).getBody();
     List<String> definitionArguments = fnDefinitions.get(name).getProto().getArguments();
     for (int i = 0; i < arguments.size(); i++) {
       scope.put(definitionArguments.get(i), arguments.get(i));
     }
-    for (ExpressionNode node : body) node.applyNode(scope);
-    
+    for (ExpressionNode node : body)
+      result = node.applyNode(scope);
+
+    return result;
   }
 
   public List<Integer> getArguments() {
