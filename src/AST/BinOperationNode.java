@@ -2,6 +2,7 @@ package AST;
 
 import java.util.Map;
 
+import Parser.FunctionDefiniton;
 import Token.*;
 
 public class BinOperationNode extends ExpressionNode {
@@ -33,6 +34,11 @@ public class BinOperationNode extends ExpressionNode {
       return result;
     }
     return 0;
+  }
+
+  @Override
+  public void applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
+    this.rightNode.applyNode(scope, fnDefinitions);
   }
 
   public Token getOperator() {

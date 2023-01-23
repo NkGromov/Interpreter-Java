@@ -3,6 +3,7 @@ package AST;
 import java.util.Map;
 
 import Token.Token;
+import Token.TokenTypeList;
 
 public class UnarOperationNode extends ExpressionNode {
   private Token operator;
@@ -15,7 +16,10 @@ public class UnarOperationNode extends ExpressionNode {
   
   @Override
   public Integer applyNode(Map<String, Integer> scope){
-    System.out.println(this.operand.applyNode(scope));
+    if (this.operator.getToken().getName() == TokenTypeList.LOG.getType().getName()) {
+      System.out.println(this.operand.applyNode(scope));
+    }
+
     return this.operand.applyNode(scope);
   }
 

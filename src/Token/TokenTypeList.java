@@ -7,12 +7,19 @@ public enum TokenTypeList {
   SPACE(new TokenType("SPACE", "[ \\n\\t\\r]")),
   ASSIGN(new TokenType("ASSIGN", "=")),
   LOG(new TokenType("LOG", "КОНСОЛЬ")),
+  RETURN(new TokenType("RETURN", "ВЕРНУТЬ")),
   PLUS(new TokenType("PLUS", "\\+")),
   MINUS(new TokenType("MINUS", "\\-")),
   MULTIPLICATION(new TokenType("MULTIPLICATION", "\\*")),
   DIVISION(new TokenType("DIVISION", "\\/")),
   LPAR(new TokenType("LPAR", "\\(")),
-  RPAR(new TokenType("RPAR", "\\)"));
+  RPAR(new TokenType("RPAR", "\\)")),
+  LBRACE(new TokenType("LBRACE", "\\{")),
+  RBRACE(new TokenType("RBRACE", "\\}")),
+  LT(new TokenType("LT", "\\<")),
+  GT(new TokenType("GT", "\\>")),
+  COMMA(new TokenType("COMMA", "\\,"));
+  
 
   private TokenType type;
   

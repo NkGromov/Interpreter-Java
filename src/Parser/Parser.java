@@ -13,14 +13,27 @@ public class Parser {
   private Integer position = 0;
   private List<Token> tokenList = new ArrayList<>();
   private Map<String, Integer> scope = new HashMap<>();
+  private Map<String, FunctionDefiniton> fnDefinitions = new HashMap<>();
 
   public Parser(List<Token> tokenList) {
     this.tokenList = tokenList;
   }
 
   public void run(StatementsNode rooteNode) {
-    for (ExpressionNode node : rooteNode.getCodeStrings())
-      node.applyNode(this.scope);
+    for (ExpressionNode node : rooteNode.getCodeStrings()) {
+      if (node instanceof FnCallNode || node instanceof FunctionNode) {
+        node.applyNode(this.scope, fnDefinitions);
+      } else if (node instanceof BinOperationNode) {
+        BinOperationNode binNode = (BinOperationNode) node;
+        if (binNode.getRightNode() instanceof FunctionNode) {
+          binNode.applyNode(scope, fnDefinitions);
+        }
+      } else {
+        node.applyNode(this.scope);
+      }
+
+    }
+
   }
 
   public StatementsNode parseCode() {
@@ -39,20 +52,58 @@ public class Parser {
   }
 
   private ExpressionNode parseExpression() {
-    if (this.match(TokenTypeList.LOG) != null)
-      return this.parsePrint();
+    Token logToken = this.match(TokenTypeList.LOG);
+    if (logToken != null)
+      return this.parsePrint(logToken);
+    Token returnToken = this.match(TokenTypeList.RETURN);
+    if (returnToken != null)
+      return this.parseReturn(returnToken);
+    if (this.match(TokenTypeList.VARIABLE) != null && this.match(TokenTypeList.LPAR) != null) {
+      this.position -= 2;
+      return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
+    }
+    this.position -= 1;
     ExpressionNode variable = this.parseVariableOrNumber();
     Token assign = this.match(TokenTypeList.ASSIGN);
     if (assign != null) {
-      ExpressionNode rightNode = this.parseFormula();
+      ExpressionNode rightNode = this.parseRightExpression();
       ExpressionNode binaryNode = new BinOperationNode(assign, variable, rightNode);
       return binaryNode;
     }
     throw new Error("После переменной ожидается оператор присвоения на позиции " + this.position);
   }
 
-  private ExpressionNode parsePrint() {
-    return new UnarOperationNode(this.match(TokenTypeList.LOG), this.parseFormula());
+  private ExpressionNode parsePrint(Token token) {
+    return new UnarOperationNode(token, this.parseFormula());
+  }
+
+  private ExpressionNode parseReturn(Token token) {
+    return new UnarOperationNode(token, this.parseFormula());
+  }
+
+  private ExpressionNode parseFunctionCall(String name) {
+    try {
+      this.require(TokenTypeList.LPAR);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+    List<Integer> args = this.getArgs();
+    try {
+      this.require(TokenTypeList.RPAR);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+    return new FnCallNode(name, args);
+  }
+
+  private List<Integer> getArgs() {
+    List<Integer> args = new ArrayList<>();
+    Token currentToken = this.match(TokenTypeList.NUMBER);
+    while (currentToken != null) {
+      args.add(Integer.parseInt(currentToken.getText()));
+      currentToken = this.match(TokenTypeList.NUMBER);
+    }
+    return args;
   }
 
   private ExpressionNode parseVariableOrNumber() {
@@ -65,13 +116,49 @@ public class Parser {
     throw new Error("Ожидается число или переменная на позиции " + this.position);
   }
 
+  private ExpressionNode parseRightExpression() {
+    if (match(TokenTypeList.LPAR) != null) {
+      return parseFunctionExpression();
+    }
+    return parseFormula();
+  }
+
+  private ExpressionNode parseFunctionExpression() {
+    try {
+      this.require(TokenTypeList.RPAR);
+      this.require(TokenTypeList.GT);
+      this.require(TokenTypeList.LBRACE);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+    List<ExpressionNode> body = new ArrayList<>();
+    while (tokenList.get(this.position).getToken().getName() != TokenTypeList.RBRACE.getType().getName()) {
+      body.add(parseExpression());
+      try {
+        this.require(TokenTypeList.SEMICOLON);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+      }
+    }
+    PrototypeNode proto = new PrototypeNode("name", new ArrayList<>());
+    try {
+      this.require(TokenTypeList.RBRACE);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+
+    return new FunctionNode(proto, body);
+  }
+
   private ExpressionNode parseFormula() {
     ExpressionNode leftNode = this.parseParentheses();
-    Token operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION, TokenTypeList.DIVISION);
+    Token operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION,
+        TokenTypeList.DIVISION);
     while (operator != null) {
       ExpressionNode rithNode = this.parseParentheses();
       leftNode = new BinOperationNode(operator, leftNode, rithNode);
-      operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION, TokenTypeList.DIVISION);
+      operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION,
+          TokenTypeList.DIVISION);
     }
     return leftNode;
   }
