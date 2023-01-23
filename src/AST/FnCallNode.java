@@ -17,7 +17,7 @@ public class FnCallNode extends ExpressionNode {
 
   @Override
   public void applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
-    FunctionDefiniton fn = fnDefinitions.get("name");
+    FunctionDefiniton fn = fnDefinitions.get(name);
     List<ExpressionNode> body = fn.getBody();
     for (ExpressionNode node : body) {
       node.applyNode(scope);

@@ -63,10 +63,10 @@ public class Parser {
       return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
     }
     this.position -= 1;
-    ExpressionNode variable = this.parseVariableOrNumber();
+    VariableNode variable = (VariableNode) this.parseVariableOrNumber();
     Token assign = this.match(TokenTypeList.ASSIGN);
     if (assign != null) {
-      ExpressionNode rightNode = this.parseRightExpression();
+      ExpressionNode rightNode = this.parseRightExpression(variable.getVariable().getText());
       ExpressionNode binaryNode = new BinOperationNode(assign, variable, rightNode);
       return binaryNode;
     }
@@ -116,14 +116,14 @@ public class Parser {
     throw new Error("Ожидается число или переменная на позиции " + this.position);
   }
 
-  private ExpressionNode parseRightExpression() {
+  private ExpressionNode parseRightExpression(String variableName) {
     if (match(TokenTypeList.LPAR) != null) {
-      return parseFunctionExpression();
+      return parseFunctionExpression(variableName);
     }
     return parseFormula();
   }
 
-  private ExpressionNode parseFunctionExpression() {
+  private ExpressionNode parseFunctionExpression(String variableName) {
     try {
       this.require(TokenTypeList.RPAR);
       this.require(TokenTypeList.GT);
@@ -140,7 +140,7 @@ public class Parser {
         System.out.println(e.getMessage());
       }
     }
-    PrototypeNode proto = new PrototypeNode("name", new ArrayList<>());
+    PrototypeNode proto = new PrototypeNode(variableName, new ArrayList<>());
     try {
       this.require(TokenTypeList.RBRACE);
     } catch (Exception e) {
