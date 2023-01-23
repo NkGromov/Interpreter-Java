@@ -1,7 +1,4 @@
 package Token;
-
-import java.util.ArrayList;
-
 public enum TokenTypeList {
   NUMBER(new TokenType("NUMBER", "[0-9]+")),
   VARIABLE(new TokenType("VARIABLE", "[а-я]+")),
