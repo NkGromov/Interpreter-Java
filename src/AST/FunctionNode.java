@@ -18,7 +18,7 @@ public class FunctionNode extends ExpressionNode  {
 
   @Override
   public void applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
-    fnDefinitions.put(proto.getName(), new FunctionDefiniton(body));
+    fnDefinitions.put(proto.getName(), new FunctionDefiniton(body, proto));
   }
 
   public List<ExpressionNode> getBody() {

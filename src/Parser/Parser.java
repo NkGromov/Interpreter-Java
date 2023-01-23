@@ -40,11 +40,7 @@ public class Parser {
     StatementsNode root = new StatementsNode();
     while (isPositionLessTokenList()) {
       ExpressionNode codeStringNode = this.parseExpression();
-      try {
-        this.require(TokenTypeList.SEMICOLON);
-      } catch (Exception e) {
-        System.out.println(e.getMessage());
-      }
+      checkRequire(TokenTypeList.SEMICOLON);
       root.addNode(codeStringNode);
     }
 
@@ -58,11 +54,9 @@ public class Parser {
     Token returnToken = this.match(TokenTypeList.RETURN);
     if (returnToken != null)
       return this.parseReturn(returnToken);
-    if (this.match(TokenTypeList.VARIABLE) != null && this.match(TokenTypeList.LPAR) != null) {
-      this.position -= 2;
+    if (this.positionMatch(TokenTypeList.VARIABLE, this.position) && this.positionMatch(TokenTypeList.LPAR, this.position + 1)) {
       return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
     }
-    this.position -= 1;
     VariableNode variable = (VariableNode) this.parseVariableOrNumber();
     Token assign = this.match(TokenTypeList.ASSIGN);
     if (assign != null) {
@@ -82,21 +76,13 @@ public class Parser {
   }
 
   private ExpressionNode parseFunctionCall(String name) {
-    try {
-      this.require(TokenTypeList.LPAR);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
-    List<Integer> args = this.getArgs();
-    try {
-      this.require(TokenTypeList.RPAR);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
+    checkRequire(TokenTypeList.LPAR);
+    List<Integer> args = this.getCallArgs();
+    checkRequire(TokenTypeList.RPAR);
     return new FnCallNode(name, args);
   }
 
-  private List<Integer> getArgs() {
+  private List<Integer> getCallArgs() {
     List<Integer> args = new ArrayList<>();
     Token currentToken = this.match(TokenTypeList.NUMBER);
     while (currentToken != null) {
@@ -124,31 +110,31 @@ public class Parser {
   }
 
   private ExpressionNode parseFunctionExpression(String variableName) {
-    try {
-      this.require(TokenTypeList.RPAR);
-      this.require(TokenTypeList.GT);
-      this.require(TokenTypeList.LBRACE);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
+    List<String> args = this.getDefinitionArgs();
+    checkRequire(TokenTypeList.RPAR);
+    checkRequire(TokenTypeList.GT);
+    checkRequire(TokenTypeList.LBRACE);
     List<ExpressionNode> body = new ArrayList<>();
     while (tokenList.get(this.position).getToken().getName() != TokenTypeList.RBRACE.getType().getName()) {
       body.add(parseExpression());
-      try {
-        this.require(TokenTypeList.SEMICOLON);
-      } catch (Exception e) {
-        System.out.println(e.getMessage());
-      }
+      checkRequire(TokenTypeList.SEMICOLON);
     }
-    PrototypeNode proto = new PrototypeNode(variableName, new ArrayList<>());
-    try {
-      this.require(TokenTypeList.RBRACE);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
+    PrototypeNode proto = new PrototypeNode(variableName, args);
+    checkRequire(TokenTypeList.RBRACE);
 
     return new FunctionNode(proto, body);
   }
+
+  private List<String> getDefinitionArgs() {
+    List<String> args = new ArrayList<>();
+    Token currentToken = this.match(TokenTypeList.VARIABLE);
+    while (currentToken != null) {
+      args.add(currentToken.getText());
+      currentToken = this.match(TokenTypeList.VARIABLE);
+    }
+    return args;
+  }
+
 
   private ExpressionNode parseFormula() {
     ExpressionNode leftNode = this.parseParentheses();
@@ -167,13 +153,16 @@ public class Parser {
     if (this.match(TokenTypeList.LPAR) == null)
       return this.parseVariableOrNumber();
     ExpressionNode node = this.parseFormula();
+    checkRequire(TokenTypeList.RPAR);
+    return node;
+  }
+
+  private void checkRequire(TokenTypeList... types) {
     try {
-      this.require(TokenTypeList.RPAR);
+      this.require(types);
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
-
-    return node;
   }
 
   private void require(TokenTypeList... types) throws Exception {
@@ -192,6 +181,11 @@ public class Parser {
       }
     }
     return null;
+  }
+
+  private boolean positionMatch(TokenTypeList type, Integer matchPostion) {
+    if(tokenList.get(matchPostion).getToken().getName() == type.getType().getName()) return true;
+    else return false;
   }
 
   private boolean isPositionLessTokenList() {
