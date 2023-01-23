@@ -29,8 +29,7 @@ public class BinOperationNode extends ExpressionNode {
       return this.leftNode.applyNode(scope) / this.rightNode.applyNode(scope);
     if (this.operator.getToken().getName() == TokenTypeList.ASSIGN.getType().getName()) {
       Integer result = this.rightNode.applyNode(scope);
-      VariableNode variableNode = (VariableNode) this.leftNode;
-      scope.put(variableNode.getVariable().getText(), result);
+      this.setScope(scope, result);
       return result;
     }
     return 0;
@@ -39,10 +38,13 @@ public class BinOperationNode extends ExpressionNode {
   @Override
   public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
     Integer result = this.rightNode.applyNode(scope, fnDefinitions);
+    this.setScope(scope, result);
+    return result;
+  }
+
+  private void setScope(Map<String, Integer> scope, Integer result) {
     VariableNode variableNode = (VariableNode) this.leftNode;
     scope.put(variableNode.getVariable().getText(), result);
-
-    return 0;
   }
 
   public Token getOperator() {
