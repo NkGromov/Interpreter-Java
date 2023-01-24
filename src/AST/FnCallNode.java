@@ -24,7 +24,7 @@ public class FnCallNode extends ExpressionNode {
       scope.put(definitionArguments.get(i), arguments.get(i));
     }
     for (ExpressionNode node : body)
-      result = node.applyNode(scope);
+      result = node.applyNode(scope, fnDefinitions);
 
     return result;
   }

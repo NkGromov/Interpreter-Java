@@ -21,19 +21,8 @@ public class Parser {
 
   public void run(StatementsNode rooteNode) {
     for (ExpressionNode node : rooteNode.getCodeStrings()) {
-      if (node instanceof FnCallNode || node instanceof FunctionNode) {
-        node.applyNode(this.scope, fnDefinitions);
-      } else if (node instanceof BinOperationNode) {
-        BinOperationNode binNode = (BinOperationNode) node;
-        if (binNode.getRightNode() instanceof FunctionNode || binNode.getRightNode() instanceof FnCallNode) {
-          binNode.applyNode(scope, fnDefinitions);
-        }
-      } else {
-        node.applyNode(this.scope);
-      }
-
+      node.applyNode(this.scope,fnDefinitions);
     }
-
   }
 
   public StatementsNode parseCode() {
@@ -104,11 +93,9 @@ public class Parser {
 
   private ExpressionNode parseRightExpression(String variableName) {
     if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.RPAR, this.position + 1)) {
-      this.position += 1;
       return parseFunctionExpression(variableName);
     }
     if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.VARIABLE, this.position + 1) && match(TokenTypeSets.OPERATIONS.getSets()) == null) {
-      this.position += 1;
       return parseFunctionExpression(variableName);
     }
     if (positionMatch(TokenTypeList.VARIABLE, this.position) && positionMatch(TokenTypeList.LPAR, this.position + 1)) {
@@ -119,6 +106,7 @@ public class Parser {
   }
 
   private ExpressionNode parseFunctionExpression(String variableName) {
+    checkRequire(TokenTypeList.LPAR);
     List<String> args = this.getDefinitionArgs();
     checkRequire(TokenTypeList.RPAR);
     checkRequire(TokenTypeList.GT);

@@ -2,6 +2,7 @@ package AST;
 
 import java.util.Map;
 
+import Parser.FunctionDefiniton;
 import Token.Token;
 import Token.TokenTypeList;
 
@@ -15,12 +16,12 @@ public class UnarOperationNode extends ExpressionNode {
   }
   
   @Override
-  public Integer applyNode(Map<String, Integer> scope){
+  public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions){
     if (this.operator.getToken().getName() == TokenTypeList.LOG.getType().getName()) {
-      System.out.println(this.operand.applyNode(scope));
+      System.out.println(this.operand.applyNode(scope, fnDefinitions));
     }
 
-    return this.operand.applyNode(scope);
+    return this.operand.applyNode(scope, fnDefinitions);
   }
 
   public ExpressionNode getOperand() {

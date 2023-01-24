@@ -2,6 +2,7 @@ package AST;
 
 import java.util.Map;
 
+import Parser.FunctionDefiniton;
 import Token.Token;
 
 public class NumberNode extends ExpressionNode {
@@ -11,7 +12,7 @@ public class NumberNode extends ExpressionNode {
   }
   
   @Override
-  public Integer applyNode(Map<String, Integer> scope){
+  public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions){
     return Integer.parseInt(this.number.getText());
   }
 

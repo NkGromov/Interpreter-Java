@@ -18,28 +18,21 @@ public class BinOperationNode extends ExpressionNode {
   }
 
   @Override
-  public Integer applyNode(Map<String, Integer> scope) {
+  public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
     if (this.operator.getToken().getName() == TokenTypeList.PLUS.getType().getName())
-      return this.leftNode.applyNode(scope) + this.rightNode.applyNode(scope);
+      return this.leftNode.applyNode(scope, fnDefinitions) + this.rightNode.applyNode(scope, fnDefinitions);
     if (this.operator.getToken().getName() == TokenTypeList.MINUS.getType().getName())
-      return this.leftNode.applyNode(scope) - this.rightNode.applyNode(scope);
+      return this.leftNode.applyNode(scope, fnDefinitions) - this.rightNode.applyNode(scope, fnDefinitions);
     if (this.operator.getToken().getName() == TokenTypeList.MULTIPLICATION.getType().getName())
-      return this.leftNode.applyNode(scope) * this.rightNode.applyNode(scope);
+      return this.leftNode.applyNode(scope, fnDefinitions) * this.rightNode.applyNode(scope, fnDefinitions);
     if (this.operator.getToken().getName() == TokenTypeList.DIVISION.getType().getName())
-      return this.leftNode.applyNode(scope) / this.rightNode.applyNode(scope);
+      return this.leftNode.applyNode(scope, fnDefinitions) / this.rightNode.applyNode(scope, fnDefinitions);
     if (this.operator.getToken().getName() == TokenTypeList.ASSIGN.getType().getName()) {
-      Integer result = this.rightNode.applyNode(scope);
+      Integer result = this.rightNode.applyNode(scope, fnDefinitions);
       this.setScope(scope, result);
       return result;
     }
     return 0;
-  }
-
-  @Override
-  public Integer applyNode(Map<String, Integer> scope, Map<String, FunctionDefiniton> fnDefinitions) {
-    Integer result = this.rightNode.applyNode(scope, fnDefinitions);
-    this.setScope(scope, result);
-    return result;
   }
 
   private void setScope(Map<String, Integer> scope, Integer result) {
