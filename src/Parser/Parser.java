@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import AST.*;
@@ -21,7 +22,7 @@ public class Parser {
 
   public void run(StatementsNode rooteNode) {
     for (ExpressionNode node : rooteNode.getCodeStrings()) {
-      node.applyNode(this.scope,fnDefinitions);
+      node.applyNode(this.scope, this.fnDefinitions);
     }
   }
 
@@ -29,7 +30,7 @@ public class Parser {
     StatementsNode root = new StatementsNode();
     while (isPositionLessTokenList()) {
       ExpressionNode codeStringNode = this.parseExpression();
-      checkRequire(TokenTypeList.SEMICOLON);
+      this.checkRequire(TokenTypeList.SEMICOLON);
       root.addNode(codeStringNode);
     }
 
@@ -43,7 +44,7 @@ public class Parser {
     Token returnToken = this.match(TokenTypeList.RETURN);
     if (returnToken != null)
       return this.parseReturn(returnToken);
-    if (this.positionMatch(TokenTypeList.VARIABLE, this.position) && this.positionMatch(TokenTypeList.LPAR, this.position + 1)) {
+    if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
       return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
     }
     VariableNode variable = (VariableNode) this.parseVariableOrNumber();
@@ -66,19 +67,10 @@ public class Parser {
 
   private ExpressionNode parseFunctionCall(String name) {
     checkRequire(TokenTypeList.LPAR);
-    List<Integer> args = this.getCallArgs();
+    List<Integer> args = this.getArgs(TokenTypeList.NUMBER).stream().map(arg -> Integer.parseInt(arg.getText()))
+        .collect(Collectors.toList());
     checkRequire(TokenTypeList.RPAR);
     return new FnCallNode(name, args);
-  }
-
-  private List<Integer> getCallArgs() {
-    List<Integer> args = new ArrayList<>();
-    Token currentToken = this.match(TokenTypeList.NUMBER);
-    while (currentToken != null) {
-      args.add(Integer.parseInt(currentToken.getText()));
-      currentToken = this.match(TokenTypeList.NUMBER);
-    }
-    return args;
   }
 
   private ExpressionNode parseVariableOrNumber() {
@@ -92,46 +84,47 @@ public class Parser {
   }
 
   private ExpressionNode parseRightExpression(String variableName) {
-    if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.RPAR, this.position + 1)) {
-      return parseFunctionExpression(variableName);
+    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.RPAR)) {
+      return this.parseFunctionExpression(variableName);
     }
-    if (positionMatch(TokenTypeList.LPAR, this.position) && positionMatch(TokenTypeList.VARIABLE, this.position + 1) && match(TokenTypeSets.OPERATIONS.getSets()) == null) {
-      return parseFunctionExpression(variableName);
+    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.VARIABLE)
+        && this.match(TokenTypeSets.OPERATIONS.getSets()) == null) {
+      return this.parseFunctionExpression(variableName);
     }
-    if (positionMatch(TokenTypeList.VARIABLE, this.position) && positionMatch(TokenTypeList.LPAR, this.position + 1)) {
+    if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
       Token variableNode = this.match(TokenTypeList.VARIABLE);
-      return parseFunctionCall(variableNode.getText());
+      return this.parseFunctionCall(variableNode.getText());
     }
-    return parseFormula();
+    return this.parseFormula();
   }
 
   private ExpressionNode parseFunctionExpression(String variableName) {
-    checkRequire(TokenTypeList.LPAR);
-    List<String> args = this.getDefinitionArgs();
-    checkRequire(TokenTypeList.RPAR);
-    checkRequire(TokenTypeList.GT);
-    checkRequire(TokenTypeList.LBRACE);
+    this.checkRequire(TokenTypeList.LPAR);
+    List<String> arguments = this.getArgs(TokenTypeList.VARIABLE).stream().map(arg -> arg.getText())
+        .collect(Collectors.toList());
+    this.checkRequire(TokenTypeList.RPAR);
+    this.checkRequire(TokenTypeList.GT);
+    this.checkRequire(TokenTypeList.LBRACE);
     List<ExpressionNode> body = new ArrayList<>();
-    while (tokenList.get(this.position).getToken().getName() != TokenTypeList.RBRACE.getType().getName()) {
-      body.add(parseExpression());
-      checkRequire(TokenTypeList.SEMICOLON);
+    while (this.tokenList.get(this.position).getToken().getName() != TokenTypeList.RBRACE.getType().getName()) {
+      body.add(this.parseExpression());
+      this.checkRequire(TokenTypeList.SEMICOLON);
     }
-    PrototypeNode proto = new PrototypeNode(variableName, args);
-    checkRequire(TokenTypeList.RBRACE);
+    PrototypeNode proto = new PrototypeNode(variableName, arguments);
+    this.checkRequire(TokenTypeList.RBRACE);
 
     return new FunctionNode(proto, body);
   }
 
-  private List<String> getDefinitionArgs() {
-    List<String> args = new ArrayList<>();
-    Token currentToken = this.match(TokenTypeList.VARIABLE);
+  private List<Token> getArgs(TokenTypeList type) {
+    List<Token> args = new ArrayList<>();
+    Token currentToken = this.match(type);
     while (currentToken != null) {
-      args.add(currentToken.getText());
-      currentToken = this.match(TokenTypeList.VARIABLE);
+      args.add(currentToken);
+      currentToken = this.match(type);
     }
     return args;
   }
-
 
   private ExpressionNode parseFormula() {
     ExpressionNode leftNode = this.parseParentheses();
@@ -150,7 +143,7 @@ public class Parser {
     if (this.match(TokenTypeList.LPAR) == null)
       return this.parseVariableOrNumber();
     ExpressionNode node = this.parseFormula();
-    checkRequire(TokenTypeList.RPAR);
+    this.checkRequire(TokenTypeList.RPAR);
     return node;
   }
 
@@ -169,7 +162,7 @@ public class Parser {
 
   private Token match(TokenTypeList... types) {
     if (isPositionLessTokenList()) {
-      Token currentToken = tokenList.get(this.position);
+      Token currentToken = this.tokenList.get(this.position);
       Boolean isHasTokenType = Stream.of(types)
           .anyMatch(type -> type.getType().getName() == currentToken.getToken().getName());
       if (isHasTokenType) {
@@ -180,9 +173,14 @@ public class Parser {
     return null;
   }
 
-  private boolean positionMatch(TokenTypeList type, Integer matchPostion) {
-    if(tokenList.get(matchPostion).getToken().getName() == type.getType().getName()) return true;
-    else return false;
+  private boolean positionRelativeMatch(TokenTypeList... types) {
+    boolean result = true;
+    for (int i = 0; i < types.length; i++) {
+      int currentPosition = this.position + i;
+      if (this.tokenList.get(currentPosition).getToken().getName() != types[i].getType().getName())
+        result = false;
+    }
+    return result;
   }
 
   private boolean isPositionLessTokenList() {
