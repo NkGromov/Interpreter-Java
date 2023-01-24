@@ -1,11 +1,21 @@
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import AST.StatementsNode;
 import Lexer.Lexer;
 import Parser.Parser;
 
 public class App {
-    private static final String code = "сумма = 1 + (2 + 4); КОНСОЛЬ сумма;";
     public static void main(String[] args) throws Exception {
-        Lexer lexer = new Lexer(code);
+        Path path = Paths.get("code.gl");
+        Stream<String> lines = Files.lines(path);
+        String fullString = lines.collect(Collectors.joining("\n"));
+        lines.close();
+
+        Lexer lexer = new Lexer(fullString);
         lexer.analys();
         
         Parser parser = new Parser(lexer.getTokenList());
