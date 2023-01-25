@@ -4,9 +4,13 @@ public enum TokenTypeList {
   VARIABLE(new TokenType("VARIABLE", "[а-я]+")),
   SEMICOLON(new TokenType("SEMICOLON", ";")),
   SPACE(new TokenType("SPACE", "[ \\n\\t\\r]")),
+  NOTASSIGN(new TokenType("NOTASSIGN", "!=")),
+  DOABLEASSIGN(new TokenType("DOABLEASSIGN", "==")),
   ASSIGN(new TokenType("ASSIGN", "=")),
   LOG(new TokenType("LOG", "КОНСОЛЬ")),
   RETURN(new TokenType("RETURN", "ВЕРНУТЬ")),
+  IF(new TokenType("IF", "ЕСЛИ")),
+  ELSE(new TokenType("IF", "ИНАЧЕ")),
   PLUS(new TokenType("PLUS", "\\+")),
   MINUS(new TokenType("MINUS", "\\-")),
   MULTIPLICATION(new TokenType("MULTIPLICATION", "\\*")),
@@ -15,7 +19,9 @@ public enum TokenTypeList {
   RPAR(new TokenType("RPAR", "\\)")),
   LBRACE(new TokenType("LBRACE", "\\{")),
   RBRACE(new TokenType("RBRACE", "\\}")),
+  LTEQ(new TokenType("LTEQ", "\\<=")),
   LT(new TokenType("LT", "\\<")),
+  GTEQ(new TokenType("GTEQ", "\\>=")),
   GT(new TokenType("GT", "\\>")),
   COMMA(new TokenType("COMMA", "\\,"));
 

@@ -44,6 +44,8 @@ public class Parser {
     Token returnToken = this.match(TokenTypeList.RETURN);
     if (returnToken != null)
       return this.parseReturn(returnToken);
+    if (this.positionRelativeMatch(TokenTypeList.IF))
+      return this.parseCondition();
     if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
       return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
     }
@@ -63,6 +65,32 @@ public class Parser {
 
   private ExpressionNode parseReturn(Token token) {
     return new UnarOperationNode(token, this.parseFormula());
+  }
+
+  private ExpressionNode parseCondition() {
+    List<CompareNode> compares = new ArrayList<>();
+    while (this.match(TokenTypeSets.LOGICKEYWORDS.getSets()) != null) {
+      CompareType type;
+      ExpressionNode leftNode = new ExpressionNode();
+      ExpressionNode rightNode = new ExpressionNode();
+      Token operator = new Token(this.position, "operator", TokenTypeList.LPAR.getType());
+      if (this.match(TokenTypeList.IF) != null)
+        type = CompareType.IFELSE;
+      else if (this.tokenList.get(this.position - 1).getToken() == TokenTypeList.ELSE.getType())
+        type = CompareType.ELSE;
+      else
+        type = CompareType.IF;
+      if (type != CompareType.ELSE) {
+        this.checkRequire(TokenTypeList.LPAR);
+        leftNode = parseVariableOrNumber();
+        operator = this.match(TokenTypeSets.LOGICOPERATIONS.getSets());
+        rightNode = parseVariableOrNumber();
+        this.checkRequire(TokenTypeList.RPAR);
+      }
+      List<ExpressionNode> body = getBody();
+      compares.add(new CompareNode(leftNode, rightNode, operator, type, body));
+    }
+    return new ConditionNode(compares);
   }
 
   private ExpressionNode parseFunctionCall(String name) {
@@ -104,16 +132,20 @@ public class Parser {
         .collect(Collectors.toList());
     this.checkRequire(TokenTypeList.RPAR);
     this.checkRequire(TokenTypeList.GT);
+    List<ExpressionNode> body = getBody();
+    PrototypeNode proto = new PrototypeNode(variableName, arguments);
+    return new FunctionNode(proto, body);
+  }
+
+  private List<ExpressionNode> getBody() {
     this.checkRequire(TokenTypeList.LBRACE);
     List<ExpressionNode> body = new ArrayList<>();
     while (this.tokenList.get(this.position).getToken().getName() != TokenTypeList.RBRACE.getType().getName()) {
       body.add(this.parseExpression());
       this.checkRequire(TokenTypeList.SEMICOLON);
     }
-    PrototypeNode proto = new PrototypeNode(variableName, arguments);
     this.checkRequire(TokenTypeList.RBRACE);
-
-    return new FunctionNode(proto, body);
+    return body;
   }
 
   private List<Token> getArgs(TokenTypeList type) {
