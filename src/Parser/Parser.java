@@ -93,6 +93,21 @@ public class Parser {
     return new ConditionNode(compares);
   }
 
+  private ExpressionNode parseRightExpression(String variableName) {
+    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.RPAR)) {
+      return this.parseFunctionExpression(variableName);
+    }
+    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.VARIABLE)
+        && this.match(TokenTypeSets.OPERATIONS.getSets()) == null) {
+      return this.parseFunctionExpression(variableName);
+    }
+    if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
+      Token variableNode = this.match(TokenTypeList.VARIABLE);
+      return this.parseFunctionCall(variableNode.getText());
+    }
+    return this.parseFormula();
+  }
+
   private ExpressionNode parseFunctionCall(String name) {
     checkRequire(TokenTypeList.LPAR);
     List<Integer> args = this.getArgs(TokenTypeList.NUMBER).stream().map(arg -> Integer.parseInt(arg.getText()))
@@ -109,21 +124,6 @@ public class Parser {
     if (variableNode != null)
       return new VariableNode(variableNode);
     throw new Error("Ожидается число или переменная на позиции " + this.position);
-  }
-
-  private ExpressionNode parseRightExpression(String variableName) {
-    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.RPAR)) {
-      return this.parseFunctionExpression(variableName);
-    }
-    if (this.positionRelativeMatch(TokenTypeList.LPAR, TokenTypeList.VARIABLE)
-        && this.match(TokenTypeSets.OPERATIONS.getSets()) == null) {
-      return this.parseFunctionExpression(variableName);
-    }
-    if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
-      Token variableNode = this.match(TokenTypeList.VARIABLE);
-      return this.parseFunctionCall(variableNode.getText());
-    }
-    return this.parseFormula();
   }
 
   private ExpressionNode parseFunctionExpression(String variableName) {
