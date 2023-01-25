@@ -66,16 +66,10 @@ public class Parser {
   private ExpressionNode parseCondition() {
     List<CompareNode> compares = new ArrayList<>();
     while (this.match(TokenTypeSets.LOGICKEYWORDS.getSets()) != null) {
-      CompareType type;
+      CompareType type = this.getConditionType();
       ExpressionNode leftNode = new ExpressionNode();
       ExpressionNode rightNode = new ExpressionNode();
       Token operator = new Token(this.position, "operator", TokenTypeList.LPAR.getType());
-      if (this.match(TokenTypeList.IF) != null)
-        type = CompareType.IFELSE;
-      else if (this.tokenList.get(this.position - 1).getToken() == TokenTypeList.ELSE.getType())
-        type = CompareType.ELSE;
-      else
-        type = CompareType.IF;
       if (type != CompareType.ELSE) {
         this.checkRequire(TokenTypeList.LPAR);
         leftNode = parseVariableOrNumber();
@@ -87,6 +81,15 @@ public class Parser {
       compares.add(new CompareNode(leftNode, rightNode, operator, type, body));
     }
     return new ConditionNode(compares);
+  }
+
+  private CompareType getConditionType() {
+    if (this.match(TokenTypeList.IF) != null)
+      return CompareType.IFELSE;
+    else if (this.tokenList.get(this.position - 1).getToken() == TokenTypeList.ELSE.getType())
+      return CompareType.ELSE;
+    else
+      return CompareType.IF;
   }
 
   private ExpressionNode parseRightExpression(String variableName) {
