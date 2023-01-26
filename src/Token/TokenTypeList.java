@@ -9,6 +9,7 @@ public enum TokenTypeList {
   ASSIGN(new TokenType("ASSIGN", "=")),
   LOG(new TokenType("LOG", "КОНСОЛЬ")),
   RETURN(new TokenType("RETURN", "ВЕРНУТЬ")),
+  FOR(new TokenType("FOR", "ЦИКЛ")),
   IF(new TokenType("IF", "ЕСЛИ")),
   ELSE(new TokenType("IF", "ИНАЧЕ")),
   PLUS(new TokenType("PLUS", "\\+")),

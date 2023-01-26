@@ -42,6 +42,8 @@ public class Parser {
       return this.parseReturn(returnToken);
     if (this.positionRelativeMatch(TokenTypeList.IF))
       return this.parseCondition();
+    if (this.match(TokenTypeList.FOR) != null)
+      return this.parseLoop();
     if (this.positionRelativeMatch(TokenTypeList.VARIABLE, TokenTypeList.LPAR)) {
       return this.parseFunctionCall(this.match(TokenTypeList.VARIABLE).getText());
     }
@@ -82,6 +84,31 @@ public class Parser {
     }
     return new ConditionNode(compares);
   }
+
+  private ExpressionNode parseLoop() {
+    this.checkRequire(TokenTypeList.LPAR);
+    BinOperationNode varDeclaration = this.getBinOperationNode(TokenTypeList.ASSIGN);
+    CompareNode compare = this.getCompareNode();
+    BinOperationNode increment = this.getBinOperationNode(TokenTypeSets.OPERATIONS.getSets());
+    this.checkRequire(TokenTypeList.RPAR);
+    List<ExpressionNode> body = getBody();
+    return new LoopNode(varDeclaration, compare, increment, body);
+  }
+
+  private BinOperationNode getBinOperationNode(TokenTypeList... types){
+    ExpressionNode leftNode = this.parseVariableOrNumber();
+    Token operator = this.match(types);
+    ExpressionNode rightNode = this.parseVariableOrNumber();
+    return new BinOperationNode(operator, leftNode, rightNode);
+  }
+
+  private CompareNode getCompareNode(){
+    ExpressionNode leftNode = this.parseVariableOrNumber();
+    Token operator = this.match(TokenTypeSets.LOGICOPERATIONS.getSets());
+    ExpressionNode rightNode = this.parseVariableOrNumber();
+    return new CompareNode(leftNode, rightNode, operator, CompareType.IF, new ArrayList<>());
+  }
+
 
   private CompareType getConditionType() {
     if (this.match(TokenTypeList.IF) != null)
@@ -159,13 +186,11 @@ public class Parser {
 
   private ExpressionNode parseFormula() {
     ExpressionNode leftNode = this.parseParentheses();
-    Token operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION,
-        TokenTypeList.DIVISION);
+    Token operator = this.match(TokenTypeSets.OPERATIONS.getSets());
     while (operator != null) {
-      ExpressionNode rithNode = this.parseParentheses();
-      leftNode = new BinOperationNode(operator, leftNode, rithNode);
-      operator = this.match(TokenTypeList.PLUS, TokenTypeList.MINUS, TokenTypeList.MULTIPLICATION,
-          TokenTypeList.DIVISION);
+      ExpressionNode rigthNode = this.parseParentheses();
+      leftNode = new BinOperationNode(operator, leftNode, rigthNode);
+      operator = this.match(TokenTypeSets.OPERATIONS.getSets());
     }
     return leftNode;
   }

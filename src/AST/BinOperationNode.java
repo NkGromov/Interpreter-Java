@@ -11,7 +11,6 @@ public class BinOperationNode extends ExpressionNode {
   private ExpressionNode rightNode;
 
   public BinOperationNode(Token operator, ExpressionNode leftNode, ExpressionNode rightNode) {
-    super();
     this.operator = operator;
     this.leftNode = leftNode;
     this.rightNode = rightNode;
